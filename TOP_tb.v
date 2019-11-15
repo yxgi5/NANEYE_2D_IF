@@ -41,20 +41,20 @@ integer     rand;
 
 RX_DECODER UUT
 (
-    .RESET                  (RESET_tb),
-    .CLOCK                  (CLOCK_tb),
-    .ENABLE                 (ENABLE_tb),
-    .RSYNC                  (RSYNC_tb),
-    .INPUT                  (INPUT_tb),
-    .CONFIG_DONE            (CONFIG_DONE_tb),
-    .CONFIG_EN              (CONFIG_EN_tb),
-    .SYNC_START             (SYNC_START_tb),
-    .FRAME_START            (FRAME_START_tb),
-    .OUTPUT                 (OUTPUT_tb),
-    .OUTPUT_EN              (OUTPUT_EN_tb),
-    .NANEYE3A_NANEYE2B_N    (NANEYE3A_NANEYE2B_N_tb),
-    .ERROR_OUT              (ERROR_OUT_tb),
-    .DEBUG_OUT              (DEBUG_OUT_tb)
+    .RESET                      (RESET_tb),
+    .CLOCK                      (CLOCK_tb),
+    .ENABLE                     (ENABLE_tb),
+    .RSYNC                      (RSYNC_tb),
+    .INPUT                      (INPUT_tb),
+    .CONFIG_DONE                (CONFIG_DONE_tb),
+    .CONFIG_EN                  (CONFIG_EN_tb),
+    .SYNC_START                 (SYNC_START_tb),
+    .FRAME_START                (FRAME_START_tb),
+    .OUTPUT                     (OUTPUT_tb),
+    .OUTPUT_EN                  (OUTPUT_EN_tb),
+    .NANEYE3A_NANEYE2B_N        (NANEYE3A_NANEYE2B_N_tb),
+    .ERROR_OUT                  (ERROR_OUT_tb),
+    .DEBUG_OUT                  (DEBUG_OUT_tb)
 );
 
 RX_DESERIALIZER UUT2
@@ -85,6 +85,57 @@ LINE_PERIOD_CALC UUT3
     .PIXEL_ERROR                (PIXEL_ERROR_tb),
     .LINE_END                   (LINE_END_tb),
     .LINE_PERIOD                (LINE_PERIOD2_tb)
+);
+
+
+parameter C_ADDR_W_tb = 9;
+
+wire    [C_ADDR_W_tb-1:0]       DPRAM_WR_ADDR_tb;
+wire                            DPRAM_WE_tb;
+wire                            DPRAM_RD_PAGE_tb;
+wire                            LINE_FINISHED_tb;
+
+DPRAM_WR_CTRL 
+#(
+    .C_ADDR_W                   (C_ADDR_W_tb)
+)UUT4
+(
+    .RESET                      (RESET_tb),
+    .CLOCK                      (CLOCK_tb),
+    .PULSE                      (PAR_OUTPUT_EN_tb),
+    .PIXEL_ERROR                (PIXEL_ERROR_tb),
+    .LINE_SYNC                  (LINE_END_tb),
+    .FRAME_SYNC                 (FRAME_START_tb),
+    .DPRAM_WR_ADDR              (DPRAM_WR_ADDR_tb),
+    .DPRAM_WE                   (DPRAM_WE_tb),
+    .DPRAM_RD_PAGE              (DPRAM_RD_PAGE_tb),
+    .LINE_FINISHED              (LINE_FINISHED_tb)
+);
+
+parameter A_WIDTH_tb = 9;   // 看看是不是用C_ADDR_W_tb替换掉
+parameter D_WIDTH_tb = 10;
+
+wire    [D_WIDTH_tb-1:0]        DOA_tb;
+wire    [D_WIDTH_tb-1:0]        DOB_tb;
+
+DPRAM
+#(
+    .A_WIDTH                    (A_WIDTH_tb),
+    .D_WIDTH                    (D_WIDTH_tb)
+)UUT5
+(
+    .CLKA                       (UCLOCK_tb),
+    .CLKB                       (CLOCK_tb),
+    .ENA                        (1'b1),
+    .ENB                        (1'b1),
+    .WEA                        (1'b0),
+    .WEB                        (DPRAM_WE_tb),
+    .ADDRA                      (),
+    .ADDRB                      (DPRAM_WR_ADDR_tb),
+    .DIA                        (),
+    .DIB                        (PAR_OUTPUT_tb[10:1]),
+    .DOA                        (DOA_tb),
+    .DOB                        (DOB_tb)
 );
 
 initial
@@ -132,13 +183,13 @@ begin
         //$display("DATA %0h ---READ RIGHT",INPUT_tb);
         //@(posedge SCLOCK or negedge SCLOCK );
 
-        // # (13889);  // 36MHz data_in
+        # (13889);  // 36MHz data_in
 
         //rand = ($random % 20);    +/-20% jitter
         //rand = ($urandom % 20); // +20% jitter
-        rand = -1*($urandom % 20); // -20% jitter
+        //rand = -1*($urandom % 20); // -20% jitter
         //$display("random jitter %0d%%",rand);
-        # (13889 + rand*13889/100);  // 36MHz data_in data rate with jitter
+        //# (13889 + rand*13889/100);  // 36MHz data_in data rate with jitter
      end
 end  
 
