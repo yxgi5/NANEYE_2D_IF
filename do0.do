@@ -26,4 +26,4 @@ view signals
 
 #300 ns
 
-run 50ms
+run 120ms

@@ -22,5 +22,7 @@ do
 done
 
 mv frames.txt data.dat
+rm tmp.txt
+rm frames.txt
 
 echo "10 frames done!"
