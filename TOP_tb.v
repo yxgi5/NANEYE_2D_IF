@@ -16,8 +16,8 @@ reg     UCLOCK_tb;  // 48MHz system clock.
 reg     ENABLE_tb;
 //reg     RSYNC_tb;
 reg     INPUT_tb;
-reg     CONFIG_DONE_tb;
-
+//reg     CONFIG_DONE_tb;
+wire    CONFIG_DONE_tb;
 wire    CONFIG_EN_tb;
 wire    SYNC_START_tb;
 wire    FRAME_START_tb;
@@ -192,6 +192,32 @@ BREAK_LOGIC UUT8
     .BREAK_N_OUTPUT             (BREAK_N_OUTPUT_tb)
 );
 
+//wire                            TX_END_tb;
+wire                            TX_DAT_tb;
+wire                            TX_CLK_tb;
+wire                            TX_OE_N_tb;
+wire                            TX_OE_tb;
+
+CONFIG_TX
+#(
+    .CLOCK_PERIOD_PS            (20833),    // 48MHz
+    .BIT_PERIOD_NS              (400),      // 2.5MHz
+    .C_NO_CFG_BITS              (24)
+)UUT9
+(
+    .RESET                      (RESET_tb),
+    .CLOCK                      (UCLOCK_tb),
+    .START                      (CONFIG_EN_tb),
+    .LINE_PERIOD                (LINE_PERIOD2_tb),
+    .INPUT                      (24'b1010_1110_1100_1001_1110_1100),
+    //.TX_END                     (TX_END_tb),
+    .TX_END                     (CONFIG_DONE_tb),
+    .TX_DAT                     (TX_DAT_tb),
+    .TX_CLK                     (TX_CLK_tb),
+    .TX_OE                      (TX_OE_tb)
+);
+
+assign      TX_OE_N_tb  =       ~TX_OE_tb;
 
 initial
 begin
@@ -258,7 +284,7 @@ begin
     #10416 UCLOCK_tb = ~UCLOCK_tb; // 48MHz sample clock
 end
 
-
+/*
 always@(posedge CLOCK_tb or RESET_tb)		
 begin
   if (RESET_tb == 1'b1)
@@ -277,6 +303,7 @@ begin
     end
   end
 end
+*/
 
 endmodule
 
