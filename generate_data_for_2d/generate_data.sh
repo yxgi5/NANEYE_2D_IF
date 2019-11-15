@@ -1,3 +1,4 @@
+#!/bin/bash
 
 rm tmp.txt
 rm frames.txt
@@ -21,8 +22,7 @@ do
     cat tmp.txt >> frames.txt
 done
 
-mv frames.txt data.dat
+mv frames.txt ../data.dat
 rm tmp.txt
-rm frames.txt
 
 echo "10 frames done!"
