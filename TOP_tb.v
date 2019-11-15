@@ -3,6 +3,10 @@
 
 `timescale 1ps/ 1ps
 //`define CheckByteNum 6000
+//`ifndef xx
+//`define xx yy // or parameter xx = yy;
+//`endif
+//`undef XX
 
 module TOP_tb();
 
@@ -112,7 +116,7 @@ DPRAM_WR_CTRL
     .LINE_FINISHED              (LINE_FINISHED_tb)
 );
 
-parameter A_WIDTH_tb = 9;   // 看看是不是用C_ADDR_W_tb替换掉
+parameter A_WIDTH_tb = C_ADDR_W_tb;
 parameter D_WIDTH_tb = 10;
 
 wire    [D_WIDTH_tb-1:0]        DOA_tb;
@@ -130,9 +134,9 @@ DPRAM
     .ENB                        (1'b1),
     .WEA                        (1'b0),
     .WEB                        (DPRAM_WE_tb),
-    .ADDRA                      (),
+    .ADDRA                      ({(A_WIDTH_tb){1'bx}}),
     .ADDRB                      (DPRAM_WR_ADDR_tb),
-    .DIA                        (),
+    .DIA                        ({(D_WIDTH_tb){1'bx}}),
     .DIB                        (PAR_OUTPUT_tb[10:1]),
     .DOA                        (DOA_tb),
     .DOB                        (DOB_tb)
