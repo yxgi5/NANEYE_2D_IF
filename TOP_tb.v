@@ -180,6 +180,19 @@ OUT_REG
     .PAR_OUTPUT                 (PAR_RAW_OUT_tb)
 );
 
+wire    [1:0]                   BREAK_N_OUTPUT_tb;
+
+BREAK_LOGIC UUT8
+(
+    .RESET                      (RESET_tb),
+    .CLOCK                      (CLOCK_tb),
+    .CONFIG_EN                  (CONFIG_EN_tb),
+    .SYNC_START                 (SYNC_START_tb),
+    .DEC_OUT_EN                 (OUTPUT_EN_tb),
+    .BREAK_N_OUTPUT             (BREAK_N_OUTPUT_tb)
+);
+
+
 initial
 begin
     j=0;
