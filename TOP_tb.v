@@ -166,6 +166,20 @@ DPRAM_RD_CTRL
     .V_SYNC                     (V_SYNC_tb)
 );
 
+wire    [D_WIDTH_tb-1:0]        PAR_RAW_OUT_tb;
+
+OUT_REG
+#(
+    .D_WIDTH                    (D_WIDTH_tb)
+)UUT7
+(
+    .RESET                      (RESET_tb),
+    .CLOCK                      (UCLOCK_tb),
+    .RDAT_VALID                 (DPRAM_RDAT_VALID_tb),
+    .PAR_INPUT                  (DOA_tb),
+    .PAR_OUTPUT                 (PAR_RAW_OUT_tb)
+);
+
 initial
 begin
     j=0;

@@ -13,6 +13,7 @@ vcom -2008 -work work {./DPRAM_WR_CTRL.vhd}
 vcom -2008 -work work {./DPRAM_RD_CTRL.vhd}
 vcom -2008 -work work {./DPRAM.vhd}
 vcom -2008 -work work {./LINE_PERIOD_CALC.vhd}
+vcom -2008 -work work {./OUT_REG.vhd}
 vlog -vlog01compat -work work {./TOP_tb.v}
 
 #simulate
