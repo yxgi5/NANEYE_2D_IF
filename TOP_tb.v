@@ -95,6 +95,7 @@ LINE_PERIOD_CALC UUT3
 parameter C_ADDR_W_tb = 9;
 
 wire    [C_ADDR_W_tb-1:0]       DPRAM_WR_ADDR_tb;
+wire    [C_ADDR_W_tb-1:0]       DPRAM_RD_ADDR_tb;
 wire                            DPRAM_WE_tb;
 wire                            DPRAM_RD_PAGE_tb;
 wire                            LINE_FINISHED_tb;
@@ -134,12 +135,35 @@ DPRAM
     .ENB                        (1'b1),
     .WEA                        (1'b0),
     .WEB                        (DPRAM_WE_tb),
-    .ADDRA                      ({(A_WIDTH_tb){1'bx}}),
+    .ADDRA                      (DPRAM_RD_ADDR_tb),
     .ADDRB                      (DPRAM_WR_ADDR_tb),
     .DIA                        ({(D_WIDTH_tb){1'bx}}),
     .DIB                        (PAR_OUTPUT_tb[10:1]),
     .DOA                        (DOA_tb),
     .DOB                        (DOB_tb)
+);
+
+wire                            DPRAM_RDAT_VALID_tb;
+wire                            H_SYNC_tb;
+wire                            V_SYNC_tb;
+
+DPRAM_RD_CTRL
+#(
+    .C_ADDR_W                   (C_ADDR_W_tb)
+)UUT6
+(
+    .RESET                      (RESET_tb),
+    .SCLOCK                     (CLOCK_tb),
+    .CLOCK                      (UCLOCK_tb),
+    .NANEYE3A_NANEYE2B_N        (NANEYE3A_NANEYE2B_N_tb),
+    .FRAMING_ERROR              (1'b0),
+    .FRAME_START                (FRAME_START_tb),
+    .LINE_FINISHED              (LINE_END_tb),
+    .DPRAM_RD_PAGE              (DPRAM_RD_PAGE_tb),
+    .DPRAM_RD_ADDR              (DPRAM_RD_ADDR_tb),
+    .DPRAM_RDAT_VALID           (DPRAM_RDAT_VALID_tb),
+    .H_SYNC                     (H_SYNC_tb),
+    .V_SYNC                     (V_SYNC_tb)
 );
 
 initial
@@ -161,7 +185,7 @@ begin
     //#700
     //INPUT_tb = 0;
 
-    #10 
+    #40000 
     RESET_tb = 0;
     //#2500000
     //CONFIG_DONE_tb = 1;

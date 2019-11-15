@@ -10,6 +10,7 @@ vcom -2008 -work work {./RX_DECODER.vhd}
 vcom -2008 -work work {./IDDR.vhd}
 vcom -2008 -work work {./RX_DESERIALIZER.vhd}
 vcom -2008 -work work {./DPRAM_WR_CTRL.vhd}
+vcom -2008 -work work {./DPRAM_RD_CTRL.vhd}
 vcom -2008 -work work {./DPRAM.vhd}
 vcom -2008 -work work {./LINE_PERIOD_CALC.vhd}
 vlog -vlog01compat -work work {./TOP_tb.v}
