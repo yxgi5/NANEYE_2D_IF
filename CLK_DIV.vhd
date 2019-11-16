@@ -57,27 +57,29 @@ begin
     end if;
 end process NEG_CNT;
 
-OUT_DIV: process(RESET,I_POS_CNT,I_NEG_CNT)
+OUT_DIV: process(RESET,CLOCK)
 begin
     if (RESET = '1') then
         I_PULSE <= '0';
-    elsif (ENABLE = '1') then
-        -- if (C_CAL = 1) then
-        if (conv_integer(DIV) mod 2 = 1) then
-            if ((I_POS_CNT < (DIV+1)/2) and (I_NEG_CNT < (DIV+1)/2)) then
-                I_PULSE <= '1';
+    elsif (rising_edge(CLOCK)) then
+        if (ENABLE = '1') then
+            -- if (C_CAL = 1) then
+            if (conv_integer(DIV) mod 2 = 1) then
+                if ((I_POS_CNT < (DIV+1)/2) and (I_NEG_CNT < (DIV+1)/2)) then
+                    I_PULSE <= '1';
+                else
+                    I_PULSE <= '0';
+                end if;
             else
-                I_PULSE <= '0';
-            end if;
+                if (I_POS_CNT < DIV/2) then
+                    I_PULSE <= '1';
+                else
+                    I_PULSE <= '0';
+                end if;
+            end if; 
         else
-            if (I_POS_CNT < DIV/2) then
-                I_PULSE <= '1';
-            else
-                I_PULSE <= '0';
-            end if;
-        end if; 
-    else
-        I_PULSE <= '0';
+            I_PULSE <= '0';
+        end if;
     end if;
 end process OUT_DIV;
 

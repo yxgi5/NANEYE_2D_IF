@@ -33,7 +33,7 @@ entity CONFIG_TX is
   generic (
     CLOCK_PERIOD_PS:            integer:=10000;                                 -- system clock period
     BIT_PERIOD_NS:              integer:=10000;                                 -- data rate
-    C_NO_CFG_BITS:              integer:=24);
+    C_NO_CFG_BITS:              integer:=24);                                   -- serial bits
   port (
     RESET:                      in  std_logic;                                  -- async. reset
     CLOCK:                      in  std_logic;                                  -- system clock
@@ -70,9 +70,14 @@ signal I_START_3:               std_logic;
 signal I_START_P:               std_logic;
 signal I_ENABLE:                std_logic;
 signal I_PULSE:                 std_logic;
+signal I_PULSE_1:               std_logic;
+--signal I_PULSE_2:               std_logic;
+--signal I_PULSE_3:               std_logic;
+signal I_PULSE_P:               std_logic;
+signal I_PULSE_N:               std_logic;
 signal I_BIT_CNT:               T_BIT_CNT;
 signal I_SREG:                  std_logic_vector(C_NO_CFG_BITS-1 downto 0);
-signal I_TX_CLK:                std_logic;
+--signal I_TX_CLK:                std_logic;
 signal I_TX_OE:                 std_logic;
 signal I_TX_OE_1:               std_logic;
 signal I_CFG_PERIOD:            std_logic;
@@ -102,6 +107,9 @@ end process START_SYNC;
 I_START_P <= I_START_2 and not I_START_3;
 
 
+--------------------------------------------------------------------------------
+-- generation of divided clock
+--------------------------------------------------------------------------------
 I_CLK_DIV: CLK_DIV
    generic map (
       DIV                       => C_CLK_DIV)
@@ -113,6 +121,25 @@ I_CLK_DIV: CLK_DIV
 
 
 --------------------------------------------------------------------------------
+-- synchronization of I_PULSE signal
+--------------------------------------------------------------------------------
+I_PULSE_SYNC: process(RESET,CLOCK)
+begin
+  if (RESET = '1') then
+    I_PULSE_1 <= '0';
+    --I_PULSE_2 <= '0';
+    --I_PULSE_3 <= '0';
+  elsif (rising_edge(CLOCK)) then
+    I_PULSE_1 <= I_PULSE;
+    --I_PULSE_2 <= I_PULSE_1;
+    --I_PULSE_3 <= I_PULSE_2;
+  end if;
+end process I_PULSE_SYNC;
+
+I_PULSE_P <= I_PULSE and not I_PULSE_1;
+I_PULSE_N <= not I_PULSE and I_PULSE_1;
+
+--------------------------------------------------------------------------------
 -- Activate I_ENABLE after receiving a start-pulse
 --------------------------------------------------------------------------------
 ENABLE_EVAL: process(RESET,CLOCK)
@@ -120,7 +147,8 @@ begin
   if (RESET = '1') then
     I_ENABLE <= '0';
   elsif (rising_edge(CLOCK)) then
-    if ((I_BIT_CNT = C_NO_CFG_BITS-1) and (I_TX_CLK = '1') and (I_PULSE = '1')) then
+    -- if ((I_BIT_CNT = C_NO_CFG_BITS-1) and (I_TX_CLK = '1') and (I_PULSE = '1')) then
+    if ((I_BIT_CNT = C_NO_CFG_BITS-1) and (I_PULSE_N = '1')) then
       I_ENABLE <= '0';
     elsif (I_START_P = '1') then
       I_ENABLE <= '1';
@@ -140,7 +168,8 @@ begin
     I_BIT_CNT <= 0;
   elsif (rising_edge(CLOCK)) then
     if (I_TX_OE = '1') then
-      if ((I_TX_CLK = '1') and (I_PULSE = '1')) then
+      -- if ((I_TX_CLK = '1') and (I_PULSE = '1')) then
+      if (I_PULSE_P = '1') then
         I_BIT_CNT <= I_BIT_CNT + 1;
       else
         I_BIT_CNT <= I_BIT_CNT;
@@ -167,7 +196,8 @@ begin
         I_SREG <= I_SREG;
       end if;
     else
-      if ((I_PULSE = '1') and (I_TX_CLK = '1')) then
+      -- if ((I_PULSE = '1') and (I_TX_CLK = '1')) then
+      if (I_PULSE_N = '1') then
         I_SREG(C_NO_CFG_BITS-1 downto 1) <= I_SREG(C_NO_CFG_BITS-2 downto 0);
         I_SREG(0) <= '0';
       else
@@ -181,22 +211,22 @@ end process SREG_EVAL;
 --------------------------------------------------------------------------------
 -- TX clock generation
 --------------------------------------------------------------------------------
-TX_CLK_EVAL: process(RESET,CLOCK)
-begin
-  if (RESET = '1') then
-    I_TX_CLK <= '0';
-  elsif (rising_edge(CLOCK)) then
-    if (I_TX_OE = '1') then
-      if (I_PULSE = '1') then
-        I_TX_CLK <= not I_TX_CLK;
-      else
-        I_TX_CLK <= I_TX_CLK;
-      end if;
-    else
-      I_TX_CLK <= '0';
-    end if;
-  end if;
-end process TX_CLK_EVAL;
+--TX_CLK_EVAL: process(RESET,CLOCK)
+--begin
+--  if (RESET = '1') then
+--    I_TX_CLK <= '0';
+--  elsif (rising_edge(CLOCK)) then
+--    if (I_TX_OE = '1') then
+--      if (I_PULSE = '1') then
+--        I_TX_CLK <= not I_TX_CLK;
+--      else
+--        I_TX_CLK <= I_TX_CLK;
+--      end if;
+--    else
+--      I_TX_CLK <= '0';
+--    end if;
+--  end if;
+--end process TX_CLK_EVAL;
 
 
 --------------------------------------------------------------------------------
@@ -209,9 +239,11 @@ begin
     I_TX_OE_1 <= '0';
   elsif (rising_edge(CLOCK)) then
     I_TX_OE_1 <= I_TX_OE;
-    if ((I_BIT_CNT = C_NO_CFG_BITS-1) and (I_TX_CLK = '1') and (I_PULSE = '1')) then
+    -- if ((I_BIT_CNT = C_NO_CFG_BITS-1) and (I_TX_CLK = '1') and (I_PULSE = '1')) then
+    if ((I_BIT_CNT = C_NO_CFG_BITS-1) and (I_PULSE_N = '1')) then
       I_TX_OE <= '0';
-    elsif ((I_ENABLE = '1') and (I_PULSE = '1')) then
+    -- elsif ((I_ENABLE = '1') and (I_PULSE = '1')) then
+    elsif ((I_ENABLE = '1') and (I_PULSE_P = '1')) then
       I_TX_OE <= '1';
     else
       I_TX_OE <= I_TX_OE;
@@ -293,7 +325,8 @@ end process SET_TX_CLK_EVAL;
 TX_END <= I_CFG_PERIOD_1 and not I_CFG_PERIOD;
 
 TX_DAT <= I_SREG(C_NO_CFG_BITS-1);
-TX_CLK <= I_TX_CLK or I_SET_TX_CLK;
+-- TX_CLK <= I_TX_CLK or I_SET_TX_CLK;
+TX_CLK <= I_PULSE or I_SET_TX_CLK;
 TX_OE  <= I_CFG_PERIOD;
 
 end RTL;
