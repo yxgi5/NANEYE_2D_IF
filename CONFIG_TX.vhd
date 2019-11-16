@@ -50,8 +50,8 @@ end entity CONFIG_TX;
 architecture RTL of CONFIG_TX is
 
 subtype T_BIT_CNT is            integer range 0 to C_NO_CFG_BITS;
-constant C_CLK_DIV:             integer:=((BIT_PERIOD_NS*1000) / (2*CLOCK_PERIOD_PS));
-
+--constant C_CLK_DIV:             integer:=((BIT_PERIOD_NS*1000) / (2*CLOCK_PERIOD_PS));
+constant C_CLK_DIV:             integer:=((((BIT_PERIOD_NS*1000) / (2*CLOCK_PERIOD_PS))+1)/2)*2;
 
 component CLK_DIV is
    generic (
