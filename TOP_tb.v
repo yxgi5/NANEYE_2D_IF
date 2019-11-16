@@ -43,7 +43,10 @@ reg     addr_mem[0:80000000];
 integer     j;
 integer     rand;
 
-RX_DECODER UUT
+RX_DECODER
+#(
+    .G_CLOCK_PERIOD_PS          (5555),
+)UUT
 (
     .RESET                      (RESET_tb),
     .CLOCK                      (CLOCK_tb),
@@ -61,7 +64,11 @@ RX_DECODER UUT
     .DEBUG_OUT                  (DEBUG_OUT_tb)
 );
 
-RX_DESERIALIZER UUT2
+RX_DESERIALIZER
+#(
+    .C_ROWS                     (250),
+    .C_COLUMNS                  (250)
+)UUT2
 (
     .RESET                      (RESET_tb),
     .CLOCK                      (CLOCK_tb),
@@ -79,7 +86,12 @@ RX_DESERIALIZER UUT2
     .DEBUG_OUT                  (DEBUG_OUT2_tb)
 );
 
-LINE_PERIOD_CALC UUT3
+LINE_PERIOD_CALC
+#(
+    .G_CLOCK_PERIOD_PS          (20833),
+    .G_LINE_PERIOD_MIN_NS       (50000),
+    .G_LINE_PERIOD_MAX_NS       (120000)
+)UUT3
 (
     .RESET                      (RESET_tb),
     .CLOCK                      (UCLOCK_tb),
