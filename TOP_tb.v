@@ -16,6 +16,7 @@ reg     UCLOCK_tb;  // 48MHz system clock.
 reg     ENABLE_tb;
 //reg     RSYNC_tb;
 reg     INPUT_tb;
+wire    INPUT_N_tb;
 //reg     CONFIG_DONE_tb;
 wire    CONFIG_DONE_tb;
 wire    CONFIG_EN_tb;
@@ -45,7 +46,7 @@ integer     rand;
 
 RX_DECODER
 #(
-    .G_CLOCK_PERIOD_PS          (5555),
+    .G_CLOCK_PERIOD_PS          (5555)
 )UUT
 (
     .RESET                      (RESET_tb),
@@ -53,6 +54,7 @@ RX_DECODER
     .ENABLE                     (ENABLE_tb),
     .RSYNC                      (RSYNC_tb),
     .INPUT                      (INPUT_tb),
+    //.INPUT                      (INPUT_N_tb),
     .CONFIG_DONE                (CONFIG_DONE_tb),
     .CONFIG_EN                  (CONFIG_EN_tb),
     .SYNC_START                 (SYNC_START_tb),
@@ -316,6 +318,8 @@ begin
   end
 end
 */
+
+assign INPUT_N_tb = ~INPUT_tb;
 
 endmodule
 
