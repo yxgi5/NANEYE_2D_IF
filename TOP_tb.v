@@ -2,6 +2,8 @@
 // Testbench
 
 `timescale 1ps/ 1ps
+`define JITTER  0               // 希望出现的的jitter百分比+1, 比如希望20%, 这里就给21
+`define JITTER_PATTERN    0     // 0: +/    1:+     2:-
 //`define CheckByteNum 6000
 //`ifndef xx
 //`define xx yy // or parameter xx = yy;
@@ -40,8 +42,11 @@ wire    [15:0]  DEBUG_OUT2_tb;
 
 wire    [15:0]  LINE_PERIOD2_tb;
 
-reg     addr_mem[0:80000000];
-integer     j;
+//reg     addr_mem[0:80000000];
+reg     i;
+integer count;
+integer fp_r;
+//integer     j;
 integer     rand;
 
 RX_DECODER
@@ -235,7 +240,7 @@ assign      TX_OE_N_tb  =       ~TX_OE_tb;
 
 initial
 begin
-    j=0;
+//    j=0;
     CLOCK_tb = 1;
     UCLOCK_tb = 1;
     RESET_tb = 1;
@@ -263,29 +268,52 @@ end
 
 initial
 begin
-   $readmemh("./data.dat",addr_mem);
+   //$readmemh("./data.dat",addr_mem);
+    fp_r=$fopen("./data.dat","r");//以读的方式打开文件
 end
 
 initial
 begin
-    INPUT_tb = addr_mem[0];
+    //INPUT_tb = addr_mem[0];
     $display("Begin READING-----READING-----READING-----READING");
-     //for(j = 0; j <=`CheckByteNum; j = j+1)
-    for (;;)
-     begin
-        INPUT_tb = addr_mem[j]; 
-        j=j+1;
-        //$display("DATA %0h ---READ RIGHT",INPUT_tb);
-        //@(posedge SCLOCK or negedge SCLOCK );
-
-        # (13889);  // 36MHz data_in
-
-        //rand = ($random % 20);    +/-20% jitter
-        //rand = ($urandom % 20); // +20% jitter
-        //rand = -1*($urandom % 20); // -20% jitter
+    while(! $feof(fp_r))
+    begin
+        count=$fscanf(fp_r,"%b" ,i) ;//每次读一行
+        INPUT_tb = i;
+        if(`JITTER != 0)
+        begin
+            case (`JITTER_PATTERN)
+            0: rand = $random % `JITTER;
+            1: rand = $urandom % `JITTER;
+            2: rand = -1*($urandom % `JITTER);
+            endcase
+        end
+        else
+        begin
+            rand = 0;
+        end
         //$display("random jitter %0d%%",rand);
-        //# (13889 + rand*13889/100);  // 36MHz data_in data rate with jitter
-     end
+        # (13889 + rand*13889/100);  // 36MHz data_in
+        
+    end
+    $fclose(fp_r);
+
+    // //for(j = 0; j <=`CheckByteNum; j = j+1)
+    //for (;;)
+    // begin
+    //    INPUT_tb = addr_mem[j]; 
+    //    j=j+1;
+    //    //$display("DATA %0h ---READ RIGHT",INPUT_tb);
+    //    //@(posedge SCLOCK or negedge SCLOCK );
+
+    //    # (13889);  // 36MHz data_in
+
+    //    //rand = ($random % 20);    +/-20% jitter
+    //    //rand = ($urandom % 20); // +20% jitter
+    //    //rand = -1*($urandom % 20); // -20% jitter
+    //    //$display("random jitter %0d%%",rand);
+    //    //# (13889 + rand*13889/100);  // 36MHz data_in data rate with jitter
+    // end
 end  
 
 always
