@@ -28,8 +28,11 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 
 entity LINE_PERIOD_CALC is
   generic (
-    G_CLOCK_PERIOD_PS:          integer:=20833;                                 -- CLOCK period in ps
+    G_CLOCK_PERIOD_PS:          integer:=20833;                                 -- CLOCK period in ps (48MHz T=20833ns)
+    -- F=36MHz T=27778ps TPP=12*T=333333ps TLINE=253*12*T=84333333ps=84333ns
+    -- if TLINE=50000ns T=16469ps F=60.72MHz
     G_LINE_PERIOD_MIN_NS:       integer:=50000;                                 -- shortest possible time for one line
+    -- if TLINE=120000ns T=39525ps F=25.3MHz
     G_LINE_PERIOD_MAX_NS:       integer:=120000);                               -- longest possible time for one line
   port (
     RESET:                      in  std_logic;                                  -- async. Reset

@@ -24,10 +24,11 @@ vsim -novopt TOP_tb
 
 #probe signals
 add wave -radix unsigned *
-#add wave -radix unsigned /TOP_tb/UUT/*
-#add wave -radix unsigned /TOP_tb/UUT2/*
+add wave -radix unsigned /TOP_tb/UUT/*
+add wave -radix unsigned /TOP_tb/UUT2/*
+add wave -radix unsigned /TOP_tb/UUT3/*
 #add wave -radix unsigned /TOP_tb/UUT/king_inst/*
-add wave -radix unsigned /TOP_tb/UUT9/*
+
 
 view structure
 view signals

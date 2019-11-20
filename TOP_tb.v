@@ -323,7 +323,7 @@ end
 
 always
 begin
-    #10416 UCLOCK_tb = ~UCLOCK_tb; // 48MHz sample clock
+    #10416 UCLOCK_tb = ~UCLOCK_tb; // 48MHz system clock
 end
 
 /*

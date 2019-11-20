@@ -48,7 +48,7 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 
 entity RX_DECODER is
   generic (
-    G_CLOCK_PERIOD_PS:          integer:= 5555);                                -- CLOCK period in ps
+    G_CLOCK_PERIOD_PS:          integer:= 5555);                                -- CLOCK period in ps (eg. 180MHz T=5555ns)
   port (
     RESET:                      in  std_logic;                                  -- async. Reset
     CLOCK:                      in  std_logic;                                  -- sampling clock; --SCLOCK
@@ -75,10 +75,8 @@ constant C_HISTOGRAM_ENTRY_W:   integer:=12;
 constant C_CAL_CNT_W:           integer:=14;
 constant C_HB_PERIOD_CNT_W:     integer:=14;
 
--- Fscl_max=2.5MHz, Fsample=360MHz=2*Fsclock, 假设Fscl=2.35MHz,那么Tscl=0.425us, Tsample=(1/2)*5555 ps, C_CAL_CNT_FR_END=(2*Tscl)/(2*Tsample)=0.85us/5555ps
--- 这样就采样一个周期的Fscl了. 应该采样超过1/2Fscl, 那么假设Fscl=1.17MHz, Tscl=0.85us, 采样(1/2)*Tscl长度, Tsample=(1/2)*5555 ps, C_CAL_CNT_FR_END = 2*(1/2)*Tscl / (2*Tsample) = 0.85 us / 5555 ps
--- 这么就明白了, 850000就是Tscl, 最好周期比这个大, 就是频率小于1.17MHz, 1MHz左右
-constant C_CAL_CNT_FR_END:      std_logic_vector(C_CAL_CNT_W-1 downto 0):=conv_std_logic_vector(850000/G_CLOCK_PERIOD_PS,C_CAL_CNT_W);                -- 0.85 锟絪
+-- CNT_FRAME_END意思是有这么个长度就认为找到一次FRAME_END, FRAME_END
+constant C_CAL_CNT_FR_END:      std_logic_vector(C_CAL_CNT_W-1 downto 0):=conv_std_logic_vector(850000/G_CLOCK_PERIOD_PS,C_CAL_CNT_W);                -- 0.85 ns delay
 constant C_CAL_CNT_SYNC:        std_logic_vector(C_CAL_CNT_W-1 downto 0):=conv_std_logic_vector(32,C_CAL_CNT_W);
 constant C_RSYNC_PER_CNT_END:   std_logic_vector(C_HB_PERIOD_CNT_W-1 downto 0):=(others => '1');
 constant C_RSYNC_PP_THR:        std_logic_vector(C_HB_PERIOD_CNT_W-1 downto 0):=conv_std_logic_vector(2*350*12,C_HB_PERIOD_CNT_W);
@@ -480,6 +478,7 @@ begin
 --------------------------------------------------------------------------------
 -- CAL_FIND_FS: waiting for frame start
 --------------------------------------------------------------------------------
+        -- 等待0.85us, 然后允许配置sensor (从上一幅最后传输到配置允许,有153(0.85us)+153(0.85us)+不超过32 个sclock的间隙)
         when CAL_FIND_FS =>
           if (I_CAL_CNT = C_CAL_CNT_FR_END) then
             I_CAL_PS <= WAIT_FOR_SENSOR_CFG;
@@ -490,6 +489,7 @@ begin
 -- WAIT_FOR_SENSOR_CFG: when there are configuration data to be transmitted to
 -- the sensor => wait for the end of the transmission phase
 --------------------------------------------------------------------------------
+        -- 等待config完毕
         when WAIT_FOR_SENSOR_CFG =>
           if (I_CONFIG_DONE_2 = '1') then
             I_CAL_PS <= CAL_FIND_SYNC;
@@ -499,6 +499,7 @@ begin
 --------------------------------------------------------------------------------
 -- CAL_FIND_SYNC: waiting for the first bits of the sync phase
 --------------------------------------------------------------------------------
+        -- I_CAL_CNT 计数32次就认为找到sync了
         when CAL_FIND_SYNC =>
           if (I_CAL_CNT = C_CAL_CNT_SYNC) then
             I_CAL_PS <= CAL_SYNC_FOUND;
@@ -510,15 +511,18 @@ begin
 --------------------------------------------------------------------------------
         when CAL_SYNC_FOUND =>
           I_CAL_PS <= CAL_MEASURE;
+        -- 每个frame最长时间是保持在这个状态的
 --------------------------------------------------------------------------------
 -- CAL_MEASURE: measure duration of shortest half bit and longest full bit
 --------------------------------------------------------------------------------
+        -- 每一个frame结束, 计数0.85us就认为要计算MIN了(就进入CAL_SEARCH_MIN状态)
         when CAL_MEASURE =>
           if (I_CAL_CNT = C_CAL_CNT_FR_END) then
             I_CAL_PS <= CAL_SEARCH_MIN;
           else
-            I_CAL_PS <= I_CAL_PS;
+            I_CAL_PS <= I_CAL_PS; --在frame中计数值不会增长到相当于0.85us的长度
           end if;
+       -- 后面几个状态应该是连续切换回到CAL_FIND_FS
 --------------------------------------------------------------------------------
 -- CAL_SEARCH_MIN: search shortest bit period in histogram
 --------------------------------------------------------------------------------
