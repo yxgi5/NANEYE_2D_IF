@@ -177,7 +177,7 @@ DPRAM_RD_CTRL
     .NANEYE3A_NANEYE2B_N        (NANEYE3A_NANEYE2B_N_tb),
     .FRAMING_ERROR              (1'b0),
     .FRAME_START                (FRAME_START_tb),
-    .LINE_FINISHED              (LINE_END_tb),
+    .LINE_FINISHED              (LINE_FINISHED_tb),
     .DPRAM_RD_PAGE              (DPRAM_RD_PAGE_tb),
     .DPRAM_RD_ADDR              (DPRAM_RD_ADDR_tb),
     .DPRAM_RDAT_VALID           (DPRAM_RDAT_VALID_tb),
