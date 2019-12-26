@@ -28,7 +28,12 @@ add wave -radix unsigned /TOP_tb/UUT/*
 add wave -radix unsigned /TOP_tb/UUT2/*
 add wave -radix unsigned /TOP_tb/UUT3/*
 #add wave -radix unsigned /TOP_tb/UUT/king_inst/*
-
+add wave -radix unsigned /TOP_tb/UUT4/*
+add wave -radix unsigned /TOP_tb/UUT5/*
+add wave -radix unsigned /TOP_tb/UUT6/*
+add wave -radix unsigned /TOP_tb/UUT7/*
+add wave -radix unsigned /TOP_tb/UUT8/*
+add wave -radix unsigned /TOP_tb/UUT9/*
 
 view structure
 view signals
